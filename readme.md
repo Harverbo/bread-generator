@@ -4,6 +4,10 @@ Este paquete genera todos los archivos necesarios para lanzar un BREAD básico e
 
 Funciona para los escenarios en que se quieren generar BREADs persistentes que puedan ser regenerados a través de seeder, sin necesidad de depender de la base de datos.
 
+## Instalación
+
+    composer require harverbo/bread-generator
+
 ## Instrucciones
 
 El generador de BREADs añade dos comandos al artisan: `bread:make` y `bread:rows`.
