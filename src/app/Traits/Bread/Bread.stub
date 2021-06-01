@@ -1,0 +1,160 @@
+<?php
+
+namespace App\Traits\{{BREAD}};
+
+use TCG\Voyager\Models\DataType;
+use Illuminate\Support\Facades\DB;
+
+trait {{BREAD}}
+{
+    /**
+     * Add bread data types.
+     *
+     * @return void
+     */
+    protected function bread_data_types()
+    {
+        // Add data types
+        if (!DB::table('data_types')->where('slug', '{{SLUG}}')->first()) {
+            $last_id = DB::table('data_types')->get()->last()->id;
+
+            DB::table('data_types')->insert([
+                [
+                    'id' => $last_id + 1,
+                    'name' => '{{SLUG}}',
+                    'slug' => '{{SLUG}}',
+                    'display_name_singular' => '{{SINGULAR}}',
+                    'display_name_plural' => '{{PLURAL}}',
+                    'icon' => '{{ICON}}',
+                    'model_name' => 'App\{{BREAD}}',
+                    'controller' => '{{BREAD}}Controller',
+                    'generate_permissions' => '1',
+                    'server_side' => '1',
+                    'details' => '{"order_column":"{{ORDER}}","order_display_column":null,"order_direction":"{{SORT}}","default_search_key":null}',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+            ]);
+        }
+
+        $resourceDataTypes = DataType::where('slug', '{{SLUG}}')->firstOrFail();
+
+        // resource id
+        $dataRow = $this->dataRow($resourceDataTypes, 'id');
+        if (!$dataRow->exists) {
+            $dataRow->fill([
+                'type'         => 'text',
+                'display_name' => __('ID'),
+                'required'     => 0,
+                'browse'       => 0,
+                'read'         => 0,
+                'edit'         => 0,
+                'add'          => 0,
+                'delete'       => 0,
+                'details'      => '',
+                'order'        => 1,
+            ])->save();
+        }
+
+        {{ADDITIONAL_ROWS}}
+
+        // resource created_at
+        $dataRow = $this->dataRow($resourceDataTypes, 'created_at');
+        if (!$dataRow->exists) {
+            $dataRow->fill([
+                'type'         => 'timestamp',
+                'display_name' => __('voyager::seeders.data_rows.created_at'),
+                'required'     => 0,
+                'browse'       => 0,
+                'read'         => 0,
+                'edit'         => 0,
+                'add'          => 0,
+                'delete'       => 0,
+                'details'      => '',
+                'order'        => 100,
+            ])->save();
+        }
+
+        // resource updated_at
+        $dataRow = $this->dataRow($resourceDataTypes, 'updated_at');
+        if (!$dataRow->exists) {
+            $dataRow->fill([
+                'type'         => 'timestamp',
+                'display_name' => __('voyager::seeders.data_rows.updated_at'),
+                'required'     => 0,
+                'browse'       => 0,
+                'read'         => 0,
+                'edit'         => 0,
+                'add'          => 0,
+                'delete'       => 0,
+                'details'      => '',
+                'order'        => 110,
+            ])->save();
+        }
+
+        // resource deleted_at
+        $dataRow = $this->dataRow($resourceDataTypes, 'deleted_at');
+        if (!$dataRow->exists) {
+            $dataRow->fill([
+                'type'         => 'timestamp',
+                'display_name' => __('Deleted at'),
+                'required'     => 0,
+                'browse'       => 0,
+                'read'         => 0,
+                'edit'         => 0,
+                'add'          => 0,
+                'delete'       => 0,
+                'details'      => '',
+                'order'        => 120,
+            ])->save();
+        }
+    }
+
+    /**
+     * Add bread menu items.
+     *
+     * @return void
+     */
+    protected function bread_menu_items()
+    {
+        // Add parent menu item if not exists
+        if (!DB::table('menu_items')->where('title', '{{PLURAL}}')->whereNull('route')->first()) {
+            DB::table('menu_items')->insert([
+             [
+                 'id' => DB::table('menu_items')->get()->last()->id + 1,
+                 'menu_id' => 1,
+                 'title' => '{{ICON}}',
+                 'url' => '',
+                 'target' => '_self',
+                 'icon_class' => 'voyager-warning',
+                 'color' => '#000000',
+                 'order' =>  DB::table('menu_items')->whereNull('parent_id')->get(['order'])->sortByDesc('order')->first()->order,
+                 'created_at' => now(),
+                 'updated_at' => now(),
+                 'route' => null
+             ]
+                   ]);
+        }
+
+        // Add resource menu item if not exists
+        if (!DB::table('menu_items')->where('route', 'voyager.{{SLUG}}.index')->first()) {
+            $resource_id = DB::table('menu_items')->where('title', '{{PLURAL}}')->whereNull('route')->first()->id;
+            DB::table('menu_items')->insert([
+                [
+                    'id' => DB::table('menu_items')->get()->last()->id + 1,
+                    'menu_id' => 1,
+                    'title' => 'Todos',
+                    'url' => '',
+                    'target' => '_self',
+                    'icon_class' => 'voyager-window-list',
+                    'color' => '#000000',
+                    'parent_id' => $resource_id,
+                    'order' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                    'route' => 'voyager.{{SLUG}}.index'
+                ]
+            ]);
+        }
+    }
+}

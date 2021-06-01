@@ -1,0 +1,119 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\{{BREAD}};
+use Illuminate\Http\Request;
+use TCG\Voyager\Facades\Voyager;
+use Illuminate\Support\Facades\Log;
+use App\Repositories\BaseRepository;
+use TCG\Voyager\Events\BreadDataAdded;
+use TCG\Voyager\Events\BreadDataUpdated;
+use App\Http\Requests\{{BREAD}}\StoreRequest;
+use App\Http\Requests\{{BREAD}}\UpdateRequest;
+
+class WashTypeController extends VoyagerBaseController
+{
+    /**
+     * Display a listing of the resource
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return void
+     */
+    public function index(Request $request)
+    {
+        $repository = new BaseRepository;
+        return $repository->list_records($request, [
+            'name',
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\{{BREAD}}\StoreRequest  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function doStore(StoreRequest $request)
+    {
+        $slug = $this->getSlug($request);
+
+        $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
+
+        // Check permission
+        $this->authorize('add', app($dataType->model_name));
+
+        // Validate fields with ajax
+        $val = $this->validateBread($request->all(), $dataType->addRows);
+
+        if ($val->fails()) {
+            return response()->json(['errors' => $val->messages()]);
+        }
+
+        if (!$request->has('_validate')) {
+            $data = $this->insertUpdateData($request, $slug, $dataType->addRows, new $dataType->model_name());
+
+            event(new BreadDataAdded($dataType, $data));
+
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'data' => $data]);
+            }
+
+            return redirect()
+                ->route("voyager.{$dataType->slug}.index")
+                ->with([
+                        'message'    => __('voyager::generic.successfully_added_new')." {$dataType->display_name_singular}",
+                        'alert-type' => 'success',
+                    ]);
+        }
+    }
+
+    /**
+     * Save record in storage.
+     *
+     * @param  \App\Http\Requests\Bread\UpdateRequest  $request
+     * @param \App\{{BREAD}} ${{SLUG}}
+     * @return \Illuminate\Http\Response
+     */
+    public function doUpdate(UpdateRequest $request, {{BREAD}} ${{SLUG}})
+    {
+        $slug = $this->getSlug($request);
+
+        $dataType = Voyager::model('DataType')->where('slug', '=', $slug)->first();
+
+        // Check permission
+        $this->authorize('edit', app($dataType->model_name));
+
+        try {
+            $data = ${{SLUG}};
+
+            // Validate fields with ajax
+            $val = $this->validateBread($request->all(), $dataType->editRows, $dataType->name, $clothes_classification);
+
+            if ($val->fails()) {
+                return response()->json(['errors' => $val->messages()]);
+            }
+
+            if (!$request->ajax()) {
+                $this->insertUpdateData($request, $slug, $dataType->editRows, $data);
+
+                event(new BreadDataUpdated($dataType, $data));
+
+                return redirect()
+                    ->route("voyager.{$dataType->slug}.index")
+                    ->with([
+                        'message'    => __('voyager::generic.successfully_updated') . " {$dataType->display_name_singular}",
+                        'alert-type' => 'success',
+                    ]);
+            }
+        } catch (\Throwable $th) {
+            return redirect()
+                ->route("voyager.{$dataType->slug}.index")
+                ->with([
+                    'message'    => __('voyager::generic.error_updating') . " {$dataType->display_name_singular}",
+                    'alert-type' => 'error',
+                ]);
+        }
+    }
+}

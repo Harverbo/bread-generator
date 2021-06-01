@@ -1,0 +1,23 @@
+{
+    "name": "harverbo/bread-generator",
+    "description": "Generador de BREADs para Laravel 5.8 Voyager",
+    "keywords": ["bread", "voyager", "laravel voyager"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Harold Abreu Ramírez",
+            "email": "harverbo@hotmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Harverbo\\BreadGenerator\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Harverbo\\BreadGenerator\\BreadGeneratorServiceProvider"]
+        }
+    }
+}

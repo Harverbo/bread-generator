@@ -1,0 +1,77 @@
+<?php
+
+use App\Traits\{{BREAD}}\{{BREAD}};
+use TCG\Voyager\Models\Role;
+use TCG\Voyager\Models\DataRow;
+use TCG\Voyager\Models\Permission;
+
+class {{BREAD}}Seeder extends Seeder
+{
+    use {{BREAD}};
+
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        // Add menu items
+        $this->bread_menu_items();
+
+        // Add new permissions
+        $this->permissions();
+
+        // Add data types rows
+        $this->bread_data_types();
+    }
+
+    /**
+     * Handle data rows.
+     *
+     * @param mixed $type
+     * @param mixed $field
+     *
+     * @return mixed
+     */
+    protected function dataRow($type, $field)
+    {
+        return DataRow::firstOrNew([
+            'data_type_id' => $type->id,
+            'field'        => $field,
+        ]);
+    }
+
+    /**
+     * Add permissions.
+     *
+     * @return void
+     */
+    protected function permissions()
+    {
+        // Add new permissions
+        $keys = [
+            'browse_{{SLUG}}',
+            'read_{{SLUG}}',
+            'edit_{{SLUG}}',
+            'add_{{SLUG}}',
+            'delete_{{SLUG}}',
+        ];
+
+        foreach ($keys as $key) {
+            Permission::firstOrCreate([
+                'key'        => $key,
+                'table_name' => null,
+            ]);
+        }
+
+        // Sync permissions to admin
+        $role = Role::where('name', 'admin')->firstOrFail();
+
+        $permissions = Permission::all();
+
+        $role->permissions()->sync(
+            $permissions->pluck('id')->all()
+        );
+    }
+}

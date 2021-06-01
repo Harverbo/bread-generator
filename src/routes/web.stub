@@ -1,0 +1,9 @@
+
+Route::group([
+    'prefix' => 'admin',
+    'middleware' => 'admin.user'
+], function () {
+    Route::get('/{{SLUG_PLURAL}}/export', [{{BREAD_PATH}}Controller::class, 'export'])->name('{{SLUG}}.export');
+    Route::post('/{{SLUG}}/store', [{{BREAD_PATH}}Controller::class, 'doStore'])->name('voyager.{{SLUG}}.do_store');
+    Route::put('/{{SLUG_PLURAL}}/{{{SLUG}}}/update', [{{BREAD_PATH}}Controller::class, 'doUpdate'])->name('voyager.{{SLUG}}.do_update');
+});
